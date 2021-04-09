@@ -5,7 +5,7 @@
 	"tasks": [
 		{
 			"type": "npm",
-			"script": "watch",
+			"script": "compile",
 			"problemMatcher": "$tsc-watch",
 			"isBackground": true,
 			"presentation": {
@@ -14,6 +14,19 @@
 			"group": {
 				"kind": "build",
 				"isDefault": true
+			},
+			"dependsOn": ["npm: test:ws"]
+		},
+		{
+			"type": "npm",
+			"script": "test:ws",
+			"problemMatcher": [],
+			"label": "npm: test:ws",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"presentation": {
+				"reveal": "never"
 			}
 		}
 	]
