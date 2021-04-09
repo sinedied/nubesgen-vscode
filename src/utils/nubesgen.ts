@@ -1,45 +1,99 @@
+import os = require("os");
+import path = require("path");
+import fs = require("fs");
+const fsp = fs.promises;
+import stream = require("stream");
+import util = require("util");
+import unzipper = require("unzipper");
+// disable typing due to issue with lib
+// see https://github.com/sindresorhus/got/issues/1682
+const got = require("got");
 import { slugify } from "./slugify";
 
 const SERVER_URL = "https://nubesgen.com";
 
-const OPTIONS = {
+export type HostingType = "APP_SERVICE" | "FUNCTION";
+
+export const GENERATOR_OPTIONS = {
   regions: [
-    { id: "eastus", name: "USA - East (Virginia)" },
-    { id: "westus", name: "USA - West (California)" },
+    { id: "eastus", label: "USA - East (Virginia)" },
+    { id: "westus", label: "USA - West (California)" },
     {
       id: "brazilsouth",
-      name: "South America - Brazil South (São Paulo State)",
+      label: "South America - Brazil South (São Paulo State)",
     },
-    { id: "francecentral", name: "Europe - France Central (Paris)" },
-    { id: "westeurope", name: "Europe - West Europe (Netherlands)" },
-    { id: "australiaeast", name: "Asia Pacific - Australia East (Sydney)" },
+    { id: "francecentral", label: "Europe - France Central (Paris)" },
+    { id: "westeurope", label: "Europe - West Europe (Netherlands)" },
+    { id: "australiaeast", label: "Asia Pacific - Australia East (Sydney)" },
     {
       id: "australiasoutheast",
-      name: "Asia Pacific - Australia Southeast (Melbourne)",
+      label: "Asia Pacific - Australia Southeast (Melbourne)",
     },
   ],
-  appServiceRuntimes: [
-    { id: "DOCKER", name: "Docker with a Dockerfile" },
-    { id: "DOCKER_SPRING", name: "Docker with Spring Boot" },
-    { id: "JAVA", name: "Java with Maven" },
-    { id: "JAVA_GRADLE", name: "Java with Gradle" },
-    { id: "SPRING", name: "Spring Boot (Java) with Maven" },
-    { id: "SPRING_GRADLE", name: "Spring Boot (Java) with Gradle" },
-    { id: "DOTNET", name: ".NET" },
-    { id: "NODEJS", name: "Node.js (JavaScript)" },
+  runtimes: {
+    APP_SERVICE: [
+      { id: "DOCKER", label: "Docker with a Dockerfile" },
+      { id: "DOCKER_SPRING", label: "Docker with Spring Boot" },
+      { id: "JAVA", label: "Java with Maven" },
+      { id: "JAVA_GRADLE", label: "Java with Gradle" },
+      { id: "SPRING", label: "Spring Boot (Java) with Maven" },
+      { id: "SPRING_GRADLE", label: "Spring Boot (Java) with Gradle" },
+      { id: "DOTNET", label: ".NET" },
+      { id: "NODEJS", label: "Node.js (JavaScript)" },
+    ],
+    FUNCTION: [
+      { id: "JAVA", label: "Java with Maven" },
+      { id: "JAVA_GRADLE", label: "Java with Gradle" },
+      { id: "SPRING", label: "Spring Boot (Java) with Maven" },
+      { id: "SPRING_GRADLE", label: "Spring Boot (Java) with Gradle" },
+      { id: "DOTNET", label: ".NET" },
+      { id: "NODEJS", label: "Node.js (JavaScript)" },
+    ],
+  },
+  hostingTypes: [
+    { id: "APP_SERVICE" as HostingType, label: "Web Application (Azure App Service)" },
+    { id: "FUNCTION" as HostingType, label: "Serverless Applications (Azure Functions)" },
   ],
-  functionsRuntimes: [
-    { id: "JAVA", name: "Java with Maven" },
-    { id: "JAVA_GRADLE", name: "Java with Gradle" },
-    { id: "SPRING", name: "Spring Boot (Java) with Maven" },
-    { id: "SPRING_GRADLE", name: "Spring Boot (Java) with Gradle" },
-    { id: "DOTNET", name: ".NET" },
-    { id: "NODEJS", name: "Node.js (JavaScript)" },
-  ],
+  hostingSizes: {
+    APP_SERVICE: [
+      {
+        id: "free",
+        label: "Free - For development and hobbyist projects",
+        detail: "Shared compute, Free SSL",
+      },
+      {
+        id: "basic",
+        label: "Basic - For dedicated dev/test",
+        detail: "Dedicated compute, Free SSL, Custom domain",
+      },
+      {
+        id: "standard",
+        label: "Standard - For production workloads",
+        detail:
+          "Dedicated compute, Free SSL, Custom domain, Auto scale",
+      },
+    ],
+    FUNCTION: [
+      {
+        id: "consumption",
+        label: "Consumption: Scale automatically and per-second billing",
+        detail:
+          "First 1 million requests per month free, Auto scale, Custom domain, Free SSL",
+      },
+      {
+        id: "premium",
+        label:
+          "Premium: For most businesses that want to optimize the web series",
+        detail:
+          "No cold start, Auto scale, Custom domain, Free SSL",
+      },
+    ],
+  },
+  databases: [],
 };
 
 export class NubesGenProject {
-  name = '';
+  name = "";
   region = "eastus";
   runtime = "DOCKER";
   gitops = false;
@@ -64,10 +118,10 @@ export class NubesGenProject {
 
   generateUrl(): string {
     if (this.slug === "") {
-      throw new Error('Invalid project name');
+      throw new Error("Invalid project name");
     }
 
-    var url = `?region=${this.region}&application=${this.components.frontApp.type}.${this.components.frontApp.size}&runtime=${this.runtime}&database=${this.components.database.type}.${this.components.database.size}`;
+    let url = `?region=${this.region}&application=${this.components.frontApp.type}.${this.components.frontApp.size}&runtime=${this.runtime}&database=${this.components.database.type}.${this.components.database.size}`;
 
     if (this.addons.length > 0) {
       url += `&addons=${this.addons.join(",")}`;
@@ -80,15 +134,23 @@ export class NubesGenProject {
     return url;
   }
 
-  generateScript(type: 'curl'|'posh' = 'curl') {
-    var url = this.generateUrl();
+  generateScript(type: "curl" | "posh" = "curl") {
+    let url = this.generateUrl();
     const curl = `curl "${SERVER_URL}/${this.slug}.tgz${url}" | tar -xzvf -`;
     const posh = `Invoke-WebRequest -Uri "${SERVER_URL}/${this.slug}.zip${url}" -OutFile ${this.slug}.zip; Expand-Archive ${this.slug}.zip -DestinationPath '.' -Force; Remove-Item ${this.slug}.zip`;
-    return type === 'posh' ? posh : curl;
+    return type === "posh" ? posh : curl;
   }
 
-  downloadZip() {
-    var url = `${this.slug}.zip${this.generateUrl()}`;
+  async generateFiles(outputDir: string) {
+    let url = `${SERVER_URL}/${this.slug}.zip${this.generateUrl()}`;
+    const tmpdir = await fsp.mkdtemp(path.join(os.tmpdir(), "nubesgen-"));
+    const zipFile = path.join(tmpdir, "project.zip");
+
+    // DL to temp folder
+    const pipeline = util.promisify(stream.pipeline);
+    await pipeline(got.stream(url), fs.createWriteStream(zipFile));
+
+    // Unzip
+    fs.createReadStream(zipFile).pipe(unzipper.Extract({ path: outputDir }));
   }
 }
-
