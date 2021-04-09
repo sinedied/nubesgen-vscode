@@ -98,7 +98,7 @@ export class NubesGenProject {
   runtime = "DOCKER";
   gitops = false;
   components = {
-    frontApp: { type: "APP_SERVICE", size: "free" },
+    hosting: { type: "APP_SERVICE" as HostingType, size: "free" },
     database: { type: "NONE", size: "free" },
   };
   addons = [];
@@ -107,21 +107,12 @@ export class NubesGenProject {
     return slugify(this.name).trim();
   }
 
-  updateAppType(appType: string) {
-    this.components.frontApp.type = appType;
-    if (appType === "APP_SERVICE") {
-      this.components.frontApp.size = "free";
-    } else {
-      this.components.frontApp.size = "consumption";
-    }
-  }
-
   generateUrl(): string {
     if (this.slug === "") {
       throw new Error("Invalid project name");
     }
 
-    let url = `?region=${this.region}&application=${this.components.frontApp.type}.${this.components.frontApp.size}&runtime=${this.runtime}&database=${this.components.database.type}.${this.components.database.size}`;
+    let url = `?region=${this.region}&application=${this.components.hosting.type}.${this.components.hosting.size}&runtime=${this.runtime}&database=${this.components.database.type}.${this.components.database.size}`;
 
     if (this.addons.length > 0) {
       url += `&addons=${this.addons.join(",")}`;
