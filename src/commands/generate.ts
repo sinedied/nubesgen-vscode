@@ -21,6 +21,7 @@ export async function generate() {
 
     project.gitops = await askGitops(project);
 
+    // TODO fix
     const targetDir: string =
       wsFolders.length > 1 ? await askFolder(wsFolders) : wsFolders[0].name;
 
@@ -32,12 +33,12 @@ export async function generate() {
       },
       (progress) => {
         progress.report({ increment: 0, message: "Generating files..." });
-        return project.generateFiles(targetDir);
+        return project.generateFiles(vscode.workspace.rootPath as string);
       }
     );
 
     vscode.window.showInformationMessage(
-      "NubesGen project generated successfully!"
+      "NubesGen project generated successfully! in "
     );
   } catch (err) {
     if (!err || err instanceof CancelError) {
@@ -108,6 +109,9 @@ async function askGitops(project: NubesGenProject) {
 }
 
 async function askFolder(wsFolders: readonly vscode.WorkspaceFolder[]) {
+
+  // TODO: filter !file:// & rm file://
+
   const folder = await vscode.window.showQuickPick(
     wsFolders.map((wsFolder) => wsFolder.name),
     { placeHolder: "Choose target workspace" }
