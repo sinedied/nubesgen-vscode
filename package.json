@@ -4,6 +4,7 @@
 	"description": "Scaffold new cloud projects with NubesGen",
 	"license": "MIT",
 	"version": "0.0.1",
+	"publisher": "sinedied",
 	"engines": {
 		"vscode": "^1.6.0"
 	},
@@ -36,7 +37,7 @@
 		"@types/mocha": "^8.0.4",
 		"@types/node": "^14.14.37",
 		"@types/unzipper": "^0.10.3",
-		"@types/vscode": "^1.55.0",
+		"@types/vscode": "^1.6.0",
 		"@typescript-eslint/eslint-plugin": "^4.14.1",
 		"@typescript-eslint/parser": "^4.14.1",
 		"eslint": "^7.19.0",
