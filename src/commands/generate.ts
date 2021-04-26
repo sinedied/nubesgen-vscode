@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { CancelError } from "../utils/cancel-error";
 import { GENERATOR_OPTIONS, NubesGenProject } from "../utils/nubesgen";
 import { getWorkspaceFolders, pickTargetFolder } from "../utils/workspace";
+import { setupGitOps } from "./gitops";
 
 export async function generate() {
   try {
@@ -34,9 +35,19 @@ export async function generate() {
       }
     );
 
-    vscode.window.showInformationMessage(
-      "NubesGen project generated successfully! in " + targetFolder
+    const actions: string[] = [];
+    if (project.gitops) {
+      actions.push("Set up GitOps");
+    }
+
+    const selected = await vscode.window.showInformationMessage(
+      "NubesGen project generated successfully!",
+      ...actions
     );
+
+    if (selected === actions[0]) {
+      await setupGitOps();
+    }
   } catch (err) {
     if (!err || err instanceof CancelError) {
       return;
