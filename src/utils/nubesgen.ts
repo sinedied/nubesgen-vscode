@@ -5,9 +5,7 @@ const fsp = fs.promises;
 import stream = require("stream");
 import util = require("util");
 import unzipper = require("unzipper");
-// disable typing due to issue with lib
-// see https://github.com/sindresorhus/got/issues/1682
-const got = require("got");
+import got from 'got';
 import { slugify } from "./slugify";
 
 const SERVER_URL = "https://nubesgen.com";
