@@ -3,19 +3,19 @@
 	"displayName": "NubesGen",
 	"description": "Scaffold new cloud projects with NubesGen",
 	"repository": {
-    "type": "git",
-    "url": "https://github.com/sinedied/nubesgen-vscode.git"
-  },
+		"type": "git",
+		"url": "https://github.com/sinedied/nubesgen-vscode.git"
+	},
 	"author": {
-    "name": "Yohan Lasorsa",
-    "url": "https://twitter.com/sinedied"
-  },
-  "homepage": "https://github.com/sinedied/nubesgen-vscode",
-  "bugs": {
-    "url": "https://github.com/sinedied/nubesgen-vscode/issues"
-  },
+		"name": "Yohan Lasorsa",
+		"url": "https://twitter.com/sinedied"
+	},
+	"homepage": "https://github.com/sinedied/nubesgen-vscode",
+	"bugs": {
+		"url": "https://github.com/sinedied/nubesgen-vscode/issues"
+	},
 	"license": "MIT",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"publisher": "sinedied",
 	"engines": {
 		"vscode": "^1.6.0"
@@ -41,9 +41,10 @@
 		]
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
+		"vscode:prepublish": "npm run build -s -- --minify",
+		"build": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
 		"compile": "tsc -p ./",
-		"watch": "tsc -watch -p ./",
+		"watch": "npm run -s esbuild-base -- --sourcemap --watch",
 		"pretest": "npm run compile && npm run lint",
 		"lint": "eslint src --ext ts",
 		"test": "node ./out/test/runTest.js",
@@ -57,6 +58,7 @@
 		"@types/vscode": "^1.6.0",
 		"@typescript-eslint/eslint-plugin": "^4.14.1",
 		"@typescript-eslint/parser": "^4.14.1",
+		"esbuild": "^0.11.15",
 		"eslint": "^7.19.0",
 		"glob": "^7.1.6",
 		"mocha": "^8.2.1",
