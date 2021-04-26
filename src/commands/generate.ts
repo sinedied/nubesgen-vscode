@@ -12,6 +12,7 @@ export async function generate() {
     project.region = await askRegion(project);
     project.components.hosting.type = await askHostingType(project);
     project.components.hosting.size = await askHostingSize(project);
+    project.runtime = await askRuntime(project);
 
     // TODO: DB, addons
 
@@ -82,6 +83,17 @@ async function askHostingSize(project: NubesGenProject) {
     throw new CancelError();
   }
   return hostingSize.id;
+}
+
+async function askRuntime(project: NubesGenProject) {
+  const runtime = await vscode.window.showQuickPick(
+    GENERATOR_OPTIONS.runtimes[project.components.hosting.type],
+    { placeHolder: "Choose runtime" }
+  );
+  if (!runtime) {
+    throw new CancelError();
+  }
+  return runtime.id;
 }
 
 async function askGitops(project: NubesGenProject) {
