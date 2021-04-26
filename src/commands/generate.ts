@@ -14,7 +14,9 @@ export async function generate() {
     project.components.hosting.size = await askHostingSize(project);
     project.runtime = await askRuntime(project);
     project.components.database.type = await askDatabase(project);
-    project.components.database.size = await askDatabaseSize(project);
+    if (project.components.database.type !== "NONE") {
+      project.components.database.size = await askDatabaseSize(project);
+    }
     project.addons = await askAddons(project);
     project.gitops = await askGitops(project);
 
