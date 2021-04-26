@@ -1,17 +1,13 @@
 import * as vscode from "vscode";
 import { CancelError } from "../utils/cancel-error";
 import { GENERATOR_OPTIONS, NubesGenProject } from "../utils/nubesgen";
+import { getWorkspaceFolders, pickTargetFolder } from "../utils/workspace";
 
 export async function generate() {
-  const wsFolders = vscode.workspace.workspaceFolders;
-  if (!wsFolders) {
-    vscode.window.showErrorMessage("Please open a workspace directory first.");
-    return;
-  }
-
-  const project = new NubesGenProject();
-
   try {
+    const wsFolders = getWorkspaceFolders();
+    const project = new NubesGenProject();
+
     project.name = await askName(project);
     project.region = await askRegion(project);
     project.components.hosting.type = await askHostingType(project);
@@ -21,9 +17,7 @@ export async function generate() {
 
     project.gitops = await askGitops(project);
 
-    // TODO fix
-    const targetDir: string =
-      wsFolders.length > 1 ? await askFolder(wsFolders) : wsFolders[0].name;
+    const targetFolder = await pickTargetFolder(wsFolders);
 
     await vscode.window.withProgress(
       {
@@ -33,12 +27,12 @@ export async function generate() {
       },
       (progress) => {
         progress.report({ increment: 0, message: "Generating files..." });
-        return project.generateFiles(vscode.workspace.rootPath as string);
+        return project.generateFiles(targetFolder);
       }
     );
 
     vscode.window.showInformationMessage(
-      "NubesGen project generated successfully! in "
+      "NubesGen project generated successfully! in " + targetFolder
     );
   } catch (err) {
     if (!err || err instanceof CancelError) {
@@ -106,18 +100,4 @@ async function askGitops(project: NubesGenProject) {
     throw new CancelError();
   }
   return gitops.id;
-}
-
-async function askFolder(wsFolders: readonly vscode.WorkspaceFolder[]) {
-
-  // TODO: filter !file:// & rm file://
-
-  const folder = await vscode.window.showQuickPick(
-    wsFolders.map((wsFolder) => wsFolder.name),
-    { placeHolder: "Choose target workspace" }
-  );
-  if (!folder) {
-    throw new CancelError();
-  }
-  return folder;
 }
