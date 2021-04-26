@@ -6,27 +6,18 @@ import { getWorkspaceFolders, pickTargetFolder } from "../utils/workspace";
 export async function setupGitOps() {
   try {
     const wsFolders = getWorkspaceFolders();
-
     // const region = await askRegion(project);
-
-
     const targetFolder = await pickTargetFolder(wsFolders);
 
-    // await vscode.window.withProgress(
-    //   {
-    //     location: vscode.ProgressLocation.Notification,
-    //     title: "NubesGen",
-    //     cancellable: false,
-    //   },
-    //   (progress) => {
-    //     progress.report({ increment: 0, message: "Generating files..." });
-    //     return project.generateFiles(targetFolder);
-    //   }
-    // );
-
-    // vscode.window.showInformationMessage(
-    //   "NubesGen project generated successfully! in "
-    // );
+    const terminal = vscode.window.createTerminal({
+      name: "GitOps Setup",
+      cwd: targetFolder,
+    });
+    terminal.show();
+    terminal.sendText(
+      'bash -c "$(curl -fsSL https://nubesgen.com/gitops/setup.sh)"'
+    );
+    // terminal.dispose();
   } catch (err) {
     if (!err || err instanceof CancelError) {
       return;
@@ -37,7 +28,7 @@ export async function setupGitOps() {
 
 async function askRegion(project: NubesGenProject) {
   const region = await vscode.window.showQuickPick(GENERATOR_OPTIONS.regions, {
-    placeHolder: "Choose deployment region",
+    placeHolder: "Choose region",
   });
   if (!region) {
     throw new CancelError();
