@@ -1,7 +1,7 @@
 {
 	"name": "nubesgen-vscode",
 	"displayName": "NubesGen",
-	"description": "Scaffold new cloud projects with NubesGen",
+	"description": "Deploy your cloud projects with NubesGen",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/sinedied/nubesgen-vscode.git"
