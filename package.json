@@ -24,14 +24,19 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:nubesgen-vscode.generate"
+		"onCommand:nubesGen.generate",
+		"onCommand:nubesGen.setupGitOps"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "nubesgen-vscode.generate",
+				"command": "nubesGen.generate",
 				"title": "NubesGen: Generate new project"
+			},
+			{
+				"command": "nubesGen.setupGitOps",
+				"title": "NubesGen: Set up GitOps"
 			}
 		]
 	},
