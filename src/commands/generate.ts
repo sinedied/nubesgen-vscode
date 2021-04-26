@@ -13,9 +13,9 @@ export async function generate() {
     project.components.hosting.type = await askHostingType(project);
     project.components.hosting.size = await askHostingSize(project);
     project.runtime = await askRuntime(project);
-
-    // TODO: DB, addons
-
+    project.components.database.type = await askDatabase(project);
+    project.components.database.size = await askDatabaseSize(project);
+    project.addons = await askAddons(project);
     project.gitops = await askGitops(project);
 
     const targetFolder = await pickTargetFolder(wsFolders);
@@ -94,6 +94,40 @@ async function askRuntime(project: NubesGenProject) {
     throw new CancelError();
   }
   return runtime.id;
+}
+
+async function askDatabase(project: NubesGenProject) {
+  const db = await vscode.window.showQuickPick(GENERATOR_OPTIONS.databases, {
+    placeHolder: "Choose database",
+  });
+  if (!db) {
+    throw new CancelError();
+  }
+  return db.id;
+}
+
+async function askDatabaseSize(project: NubesGenProject) {
+  const dbSize = await vscode.window.showQuickPick(
+    GENERATOR_OPTIONS.databaseSizes[project.components.database.type],
+    {
+      placeHolder: "Choose database size",
+    }
+  );
+  if (!dbSize) {
+    throw new CancelError();
+  }
+  return dbSize.id;
+}
+
+async function askAddons(project: NubesGenProject) {
+  const addons = await vscode.window.showQuickPick(GENERATOR_OPTIONS.addons, {
+    placeHolder: "Choose add-ons",
+    canPickMany: true,
+  });
+  if (!addons) {
+    throw new CancelError();
+  }
+  return addons.map((a) => a.id);
 }
 
 async function askGitops(project: NubesGenProject) {

@@ -13,6 +13,7 @@ import { slugify } from "./slugify";
 const SERVER_URL = "https://nubesgen.com";
 
 export type HostingType = "APP_SERVICE" | "FUNCTION";
+export type DatabaseType = "NONE" | "SQL_SERVER" | "POSTGRESQL" | "MYSQL";
 
 export const GENERATOR_OPTIONS = {
   regions: [
@@ -51,8 +52,14 @@ export const GENERATOR_OPTIONS = {
     ],
   },
   hostingTypes: [
-    { id: "APP_SERVICE" as HostingType, label: "Web Application (Azure App Service)" },
-    { id: "FUNCTION" as HostingType, label: "Serverless Applications (Azure Functions)" },
+    {
+      id: "APP_SERVICE" as HostingType,
+      label: "Web Application (Azure App Service)",
+    },
+    {
+      id: "FUNCTION" as HostingType,
+      label: "Serverless Applications (Azure Functions)",
+    },
   ],
   hostingSizes: {
     APP_SERVICE: [
@@ -69,8 +76,7 @@ export const GENERATOR_OPTIONS = {
       {
         id: "standard",
         label: "Standard - For production workloads",
-        detail:
-          "Dedicated compute, Free SSL, Custom domain, Auto scale",
+        detail: "Dedicated compute, Free SSL, Custom domain, Auto scale",
       },
     ],
     FUNCTION: [
@@ -84,12 +90,83 @@ export const GENERATOR_OPTIONS = {
         id: "premium",
         label:
           "Premium: For most businesses that want to optimize the web series",
-        detail:
-          "No cold start, Auto scale, Custom domain, Free SSL",
+        detail: "No cold start, Auto scale, Custom domain, Free SSL",
       },
     ],
   },
-  databases: [],
+  databases: [
+    { id: "NONE" as DatabaseType, label: "No database" },
+    {
+      id: "SQL_SERVER" as DatabaseType,
+      label: "Azure SQL",
+      detail: "Managed SQL database with AI",
+    },
+    {
+      id: "POSTGRESQL" as DatabaseType,
+      label: "PostgreSQL",
+      detail: "Scalable open-source SQL database",
+    },
+    {
+      id: "MYSQL" as DatabaseType,
+      label: "Azure SQL",
+      detail: "The SQL database you already know",
+    },
+  ],
+  databaseSizes: {
+    NONE: [],
+    SQL_SERVER: [
+      {
+        id: "serverless",
+        label: "Serverless - For development and small applications",
+        detail: "5GB included (up to 4TB), Auto-shutdown/restart",
+      },
+      {
+        id: "general_purpose",
+        label: "General Purpose - For most workloads",
+        detail: "5GB included (up to 4TB), 2 vCore/10GB RAM, 99.99% SLA",
+      },
+    ],
+    POSTGRESQL: [
+      {
+        id: "basic",
+        label: "Basic - For light workloads",
+        detail: "Up to 1TB, 1 vCore/2GB RAM, 99.99% SLA, PITR backups",
+      },
+      {
+        id: "general_purpose",
+        label: "General Purpose - For most business workloads",
+        detail:
+          "Up to 16TB, 2 vCore/10GB RAM (+ scaling), 99.99% SLA, PITR backups",
+      },
+    ],
+    MYSQL: [
+      {
+        id: "basic",
+        label: "Basic - For light workloads",
+        detail: "Up to 1TB, 1 vCore/2GB RAM, 99.99% SLA, PITR backups",
+      },
+      {
+        id: "general_purpose",
+        label: "General Purpose - For most business workloads",
+        detail:
+          "Up to 16TB, 2 vCore/10GB RAM (+ scaling), 99.99% SLA, PITR backups",
+      },
+    ],
+  },
+  addons: [
+    {
+      id: "storage_blob",
+      label: "Blob Storage - Scalable file storage",
+    },
+    {
+      id: "redis",
+      label: "Redis - In-memory Key-Value store",
+    },
+    {
+      id: "cosmosdb_mongodb",
+      label: "MongoDB - NoSQL database powered by CosmosDB",
+    },
+  ],
 };
 
 export class NubesGenProject {
@@ -99,9 +176,9 @@ export class NubesGenProject {
   gitops = false;
   components = {
     hosting: { type: "APP_SERVICE" as HostingType, size: "free" },
-    database: { type: "NONE", size: "free" },
+    database: { type: "NONE" as DatabaseType, size: "free" },
   };
-  addons = [];
+  addons: string[] = [];
 
   get slug(): string {
     return slugify(this.name).trim();
