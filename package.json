@@ -15,7 +15,7 @@
 		"url": "https://github.com/sinedied/nubesgen-vscode/issues"
 	},
 	"license": "MIT",
-	"version": "0.0.5",
+	"version": "0.0.9",
 	"publisher": "sinedied",
 	"engines": {
 		"vscode": "^1.6.0"
@@ -27,7 +27,7 @@
 		"onCommand:nubesGen.generate",
 		"onCommand:nubesGen.setupGitOps"
 	],
-	"main": "./out/extension.js",
+	"main": "./out/main.js",
 	"contributes": {
 		"commands": [
 			{
@@ -42,7 +42,7 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run build:base -s -- --minify",
-		"build:base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
+		"build:base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
 		"build": "npm run build:base -s -- --sourcemap",
 		"watch": "npm run -s build:base -- --sourcemap --watch",
 		"compile": "tsc -p ./",
