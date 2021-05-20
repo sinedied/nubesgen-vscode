@@ -1,6 +1,8 @@
 import * as vscode from "vscode";
 import { CancelError } from "../utils/cancel-error";
+import { showInputBoxExtension } from "../utils/input-box";
 import { GENERATOR_OPTIONS, NubesGenProject } from "../utils/nubesgen";
+import { slugify } from "../utils/slugify";
 import { getWorkspaceFolders, pickTargetFolder } from "../utils/workspace";
 import { setupGitOps } from "./gitops";
 
@@ -9,17 +11,17 @@ export async function generate() {
     const wsFolders = getWorkspaceFolders();
     const project = new NubesGenProject();
 
-    project.name = await askName(project);
-    project.region = await askRegion(project);
-    project.components.hosting.type = await askHostingType(project);
+    project.name = await askName();
+    project.region = await askRegion();
+    project.components.hosting.type = await askHostingType();
     project.components.hosting.size = await askHostingSize(project);
     project.runtime = await askRuntime(project);
-    project.components.database.type = await askDatabase(project);
+    project.components.database.type = await askDatabase();
     if (project.components.database.type !== "NONE") {
       project.components.database.size = await askDatabaseSize(project);
     }
-    project.addons = await askAddons(project);
-    project.gitops = await askGitops(project);
+    project.addons = await askAddons();
+    project.gitops = await askGitops();
 
     const targetFolder = await pickTargetFolder(wsFolders);
 
@@ -56,9 +58,14 @@ export async function generate() {
   }
 }
 
-async function askName(project: NubesGenProject) {
-  const name = await vscode.window.showInputBox({
-    prompt: "Enter project name",
+async function askName() {
+  const defaultPrompt = 'Enter a project name, we will use this name to generate your resource names. Make it short. All spaces will be replaced by dashes.';
+
+  const name = await showInputBoxExtension({
+    prompt: defaultPrompt,
+    onTextChangedUpdatePrompt: async (value: string) => {
+      return value ? `We will use ${slugify(value)} slug in resources names.` : defaultPrompt;
+    },
   });
   if (!name) {
     throw new CancelError();
@@ -66,7 +73,7 @@ async function askName(project: NubesGenProject) {
   return name;
 }
 
-async function askRegion(project: NubesGenProject) {
+async function askRegion() {
   const region = await vscode.window.showQuickPick(GENERATOR_OPTIONS.regions, {
     placeHolder: "Choose deployment region",
   });
@@ -76,7 +83,7 @@ async function askRegion(project: NubesGenProject) {
   return region.id;
 }
 
-async function askHostingType(project: NubesGenProject) {
+async function askHostingType() {
   const hostingType = await vscode.window.showQuickPick(
     GENERATOR_OPTIONS.hostingTypes,
     { placeHolder: "Choose application hosting type" }
@@ -109,7 +116,7 @@ async function askRuntime(project: NubesGenProject) {
   return runtime.id;
 }
 
-async function askDatabase(project: NubesGenProject) {
+async function askDatabase() {
   const db = await vscode.window.showQuickPick(GENERATOR_OPTIONS.databases, {
     placeHolder: "Choose database",
   });
@@ -132,7 +139,7 @@ async function askDatabaseSize(project: NubesGenProject) {
   return dbSize.id;
 }
 
-async function askAddons(project: NubesGenProject) {
+async function askAddons() {
   const addons = await vscode.window.showQuickPick(GENERATOR_OPTIONS.addons, {
     placeHolder: "Choose add-ons",
     canPickMany: true,
@@ -143,7 +150,7 @@ async function askAddons(project: NubesGenProject) {
   return addons.map((a) => a.id);
 }
 
-async function askGitops(project: NubesGenProject) {
+async function askGitops() {
   const gitops = await vscode.window.showQuickPick(
     [
       {
