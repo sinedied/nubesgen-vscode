@@ -15,8 +15,9 @@
 		"url": "https://github.com/sinedied/nubesgen-vscode/issues"
 	},
 	"license": "MIT",
-	"version": "0.0.9",
+	"version": "0.0.13",
 	"publisher": "sinedied",
+	"icon": "icon.png",
 	"engines": {
 		"vscode": "^1.6.0"
 	},
