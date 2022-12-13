@@ -1,0 +1,13 @@
+- [x] GitOps MVP (run script)
+- [x] GitOps button after generate
+- [x] Complete UI
+- [ ] GitOps: check if withing GH repo
+- [ ] Login AZ/GH
+- [ ] CI/CD
+- [ ] Icon
+- [ ] Readme
+- [x] Bundling
+- [ ] Save/load NubesGen project params
+- [ ] New env
+- [ ] Delete env
+- [ ] Commit after generation
